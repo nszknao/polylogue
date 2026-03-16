@@ -1,0 +1,55 @@
+{
+  "name": "polylogue",
+  "version": "0.1.0",
+  "description": "Multi-LLM structured debate CLI — structured discussions with multiple AI personas",
+  "type": "module",
+  "bin": {
+    "polylogue": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "bun src/cli.tsx",
+    "dev:mock": "bun e2e/dev.tsx",
+    "build": "bun build src/cli.tsx --outdir dist --target node --format esm --external react-devtools-core && printf '#!/usr/bin/env node\n' | cat - dist/cli.js > dist/cli.tmp && mv dist/cli.tmp dist/cli.js && chmod +x dist/cli.js",
+    "prepublishOnly": "bun run build",
+    "check": "bunx biome check src/",
+    "lint": "bunx biome check --write src/",
+    "typecheck": "npx tsc --noEmit"
+  },
+  "keywords": [
+    "llm",
+    "ai",
+    "debate",
+    "multi-agent",
+    "cli",
+    "structured-discussion",
+    "anthropic",
+    "openai"
+  ],
+  "author": "nszknao",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nszknao/polylogue"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.6",
+    "@types/bun": "latest",
+    "@types/react": "^19.2.14"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.78.0",
+    "@inkjs/ui": "2.0.0",
+    "ink": "6.8.0",
+    "openai": "6.29.0",
+    "react": "19.2.4"
+  }
+}
