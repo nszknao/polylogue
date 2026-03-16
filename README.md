@@ -5,7 +5,7 @@ Multi-LLM structured debate CLI. Enter a topic, and AI assembles an expert panel
 ## Quick Start
 
 ```bash
-npx polylogue "AIの未来について"
+npx polylogue "Should AI systems be open-sourced?"
 ```
 
 Or install globally:
