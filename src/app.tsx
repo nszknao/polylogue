@@ -36,7 +36,7 @@ export function App({ initialTopic }: AppProps) {
     <Box flexDirection="column" padding={1}>
       <Box marginBottom={1}>
         <Text bold color="cyan">
-          Quorum
+          Polylogue
         </Text>
       </Box>
 

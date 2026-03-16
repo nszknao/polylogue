@@ -11,5 +11,5 @@ export const config = {
     anthropic: 5,
     openai: 10,
   },
-  sessionDir: ".quorum/sessions",
+  sessionDir: ".polylogue/sessions",
 } as const;

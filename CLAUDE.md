@@ -1,4 +1,4 @@
-# Quorum
+# Polylogue
 
 Multi-LLM structured debate CLI. Bun + TypeScript + Ink (React for Terminal).
 
