@@ -1,12 +1,15 @@
 import { Box, Text } from "ink";
 import { useState } from "react";
+import { ApiKeySetup } from "@/components/api-key-setup.tsx";
 import { PersonaList } from "@/components/persona-list.tsx";
 import { ProtocolDisplay } from "@/components/protocol-display.tsx";
 import { SessionView } from "@/components/session-view.tsx";
 import { TopicInput } from "@/components/topic-input.tsx";
+import { hasRequiredKeys } from "@/lib/credentials.ts";
 import type { Persona, ProtocolType } from "@/types.ts";
 
 type Phase =
+  | { step: "setup" }
   | { step: "topic" }
   | { step: "protocol"; topic: string }
   | {
@@ -23,13 +26,17 @@ type Phase =
 
 type AppProps = {
   initialTopic?: string;
+  forceConfigure?: boolean;
 };
 
-export function App({ initialTopic }: AppProps) {
+export function App({ initialTopic, forceConfigure }: AppProps) {
+  const needsSetup = forceConfigure || !hasRequiredKeys();
   const [phase, setPhase] = useState<Phase>(
-    initialTopic
-      ? { step: "protocol", topic: initialTopic }
-      : { step: "topic" },
+    needsSetup
+      ? { step: "setup" }
+      : initialTopic
+        ? { step: "protocol", topic: initialTopic }
+        : { step: "topic" },
   );
 
   return (
@@ -39,6 +46,18 @@ export function App({ initialTopic }: AppProps) {
           Polylogue
         </Text>
       </Box>
+
+      {phase.step === "setup" && (
+        <ApiKeySetup
+          onComplete={() =>
+            setPhase(
+              initialTopic
+                ? { step: "protocol", topic: initialTopic }
+                : { step: "topic" },
+            )
+          }
+        />
+      )}
 
       {phase.step === "topic" && (
         <TopicInput

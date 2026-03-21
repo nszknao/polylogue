@@ -15,9 +15,17 @@ npm install -g polylogue
 polylogue "Should we adopt microservices?"
 ```
 
-## Requirements
+## Setup
 
-Set at least one API key as an environment variable:
+On first run, polylogue will interactively prompt for your API keys and save them to `~/.config/polylogue/credentials.json`.
+
+You can also reconfigure at any time:
+
+```bash
+npx polylogue configure
+```
+
+Alternatively, set environment variables (these take priority over saved credentials):
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...
