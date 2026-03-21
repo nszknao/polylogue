@@ -1,5 +1,14 @@
+import { getPrimaryProvider } from "@/lib/credentials.ts";
+
+const DEFAULT_MODELS = {
+  anthropic: "claude-sonnet-4-20250514",
+  openai: "gpt-4o",
+} as const;
+
 export const config = {
-  defaultModel: "claude-sonnet-4-20250514",
+  get defaultModel() {
+    return DEFAULT_MODELS[getPrimaryProvider()];
+  },
   maxFollowUps: 5,
   maxSessionTokens: 200_000,
   retry: {

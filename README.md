@@ -17,19 +17,12 @@ polylogue "Should we adopt microservices?"
 
 ## Setup
 
-On first run, polylogue will interactively prompt for your API keys and save them to `~/.config/polylogue/credentials.json`.
+On first run, polylogue will interactively prompt you to choose a primary provider (Anthropic or OpenAI) and enter your API keys. Credentials are saved to `~/.config/polylogue/credentials.json`.
 
-You can also reconfigure at any time:
+You can reconfigure at any time:
 
 ```bash
 npx polylogue configure
-```
-
-Alternatively, set environment variables (these take priority over saved credentials):
-
-```bash
-export ANTHROPIC_API_KEY=sk-ant-...
-export OPENAI_API_KEY=sk-...       # optional, enables web search personas
 ```
 
 ## Features

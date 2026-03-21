@@ -1,60 +1,106 @@
 import { PasswordInput } from "@inkjs/ui";
-import { Box, Text } from "ink";
+import { Box, Text, useInput } from "ink";
 import { useState } from "react";
-import { loadCredentials, saveCredentials } from "@/lib/credentials.ts";
+import {
+  loadCredentials,
+  type Provider,
+  saveCredentials,
+} from "@/lib/credentials.ts";
 
 type Props = {
   onComplete: () => void;
 };
 
-type Step = "anthropic" | "openai" | "done";
+type Step = "provider" | "primary-key" | "secondary-key" | "done";
+
+const PROVIDER_LABELS: Record<Provider, string> = {
+  anthropic: "Anthropic (Claude)",
+  openai: "OpenAI (GPT)",
+};
+
+const OTHER_PROVIDER: Record<Provider, Provider> = {
+  anthropic: "openai",
+  openai: "anthropic",
+};
 
 export function ApiKeySetup({ onComplete }: Props) {
-  const [step, setStep] = useState<Step>("anthropic");
-  const [anthropicKey, setAnthropicKey] = useState("");
+  const [step, setStep] = useState<Step>("provider");
+  const [selected, setSelected] = useState<0 | 1>(0);
+  const [primary, setPrimary] = useState<Provider>("anthropic");
+  const [primaryKey, setPrimaryKey] = useState("");
 
-  const handleAnthropicSubmit = (value: string) => {
+  useInput((_input, key) => {
+    if (step !== "provider") return;
+    if (key.upArrow || key.downArrow) {
+      setSelected((prev) => (prev === 0 ? 1 : 0));
+    }
+    if (key.return) {
+      const provider = selected === 0 ? "anthropic" : "openai";
+      setPrimary(provider);
+      setStep("primary-key");
+    }
+  });
+
+  const handlePrimarySubmit = (value: string) => {
     const trimmed = value.trim();
     if (!trimmed) return;
-    setAnthropicKey(trimmed);
-    setStep("openai");
+    setPrimaryKey(trimmed);
+    setStep("secondary-key");
   };
 
-  const handleOpenAISubmit = (value: string) => {
+  const handleSecondarySubmit = (value: string) => {
     const trimmed = value.trim();
     const existing = loadCredentials();
+    const secondary = OTHER_PROVIDER[primary];
     saveCredentials({
       ...existing,
-      anthropicApiKey: anthropicKey,
-      ...(trimmed ? { openaiApiKey: trimmed } : {}),
+      primaryProvider: primary,
+      [`${primary}ApiKey`]: primaryKey,
+      ...(trimmed ? { [`${secondary}ApiKey`]: trimmed } : {}),
     });
     setStep("done");
     onComplete();
   };
+
+  const providers: Provider[] = ["anthropic", "openai"];
+  const secondary = OTHER_PROVIDER[primary];
 
   return (
     <Box flexDirection="column">
       <Text>No API keys configured. Let's set them up.</Text>
       <Text color="gray">Saved to ~/.config/polylogue/credentials.json</Text>
       <Box marginTop={1} flexDirection="column">
-        {step === "anthropic" && (
+        {step === "provider" && (
           <Box flexDirection="column">
-            <Text>Anthropic API Key (required):</Text>
+            <Text>Select your primary provider:</Text>
+            {providers.map((p, i) => (
+              <Text key={p}>
+                <Text color={selected === i ? "green" : "gray"}>
+                  {selected === i ? "❯ " : "  "}
+                </Text>
+                {PROVIDER_LABELS[p]}
+              </Text>
+            ))}
+          </Box>
+        )}
+        {step === "primary-key" && (
+          <Box flexDirection="column">
+            <Text>{PROVIDER_LABELS[primary]} API Key (required):</Text>
             <Box>
               <Text color="green">❯ </Text>
-              <PasswordInput onSubmit={handleAnthropicSubmit} />
+              <PasswordInput onSubmit={handlePrimarySubmit} />
             </Box>
           </Box>
         )}
-        {step === "openai" && (
+        {step === "secondary-key" && (
           <Box flexDirection="column">
             <Text>
-              OpenAI API Key (optional, enables web search — press Enter to
+              {PROVIDER_LABELS[secondary]} API Key (optional — press Enter to
               skip):
             </Text>
             <Box>
               <Text color="green">❯ </Text>
-              <PasswordInput onSubmit={handleOpenAISubmit} />
+              <PasswordInput onSubmit={handleSecondarySubmit} />
             </Box>
           </Box>
         )}

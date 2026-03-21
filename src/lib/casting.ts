@@ -1,4 +1,5 @@
 import { config } from "@/config.ts";
+import { getPrimaryProvider } from "@/lib/credentials.ts";
 import { getLLMClient } from "@/lib/llm-client.ts";
 import { buildPersonaGenerationPrompt } from "@/lib/prompts.ts";
 import { withRetry } from "@/lib/retry.ts";
@@ -8,13 +9,28 @@ const PERSONA_COLORS = ["red", "green", "yellow", "blue", "magenta"] as const;
 
 type ModelCategory = "reasoning" | "creative" | "web_search";
 
-const MODEL_MAP: Record<ModelCategory, string> = {
-  reasoning: "claude-sonnet-4-20250514",
-  creative: "claude-haiku-4-5-20251001",
-  web_search: "gpt-4o",
-};
+const MODEL_MAPS = {
+  anthropic: {
+    reasoning: "claude-sonnet-4-20250514",
+    creative: "claude-haiku-4-5-20251001",
+    web_search: "gpt-4o",
+  },
+  openai: {
+    reasoning: "gpt-4o",
+    creative: "gpt-4o-mini",
+    web_search: "gpt-4o",
+  },
+} as const;
 
-const VALID_CATEGORIES = new Set<string>(Object.keys(MODEL_MAP));
+function getModelMap(): Record<ModelCategory, string> {
+  return MODEL_MAPS[getPrimaryProvider()];
+}
+
+const VALID_CATEGORIES = new Set<string>([
+  "reasoning",
+  "creative",
+  "web_search",
+]);
 
 type RawPersona = {
   name: string;
@@ -31,7 +47,7 @@ export function parsePersonasJson(text: string): RawPersona[] {
 
 function resolveModel(category?: string): string {
   if (category && VALID_CATEGORIES.has(category)) {
-    return MODEL_MAP[category as ModelCategory];
+    return getModelMap()[category as ModelCategory];
   }
   return config.defaultModel;
 }

@@ -9,7 +9,10 @@ const CREDENTIALS_PATH = join(
   "credentials.json",
 );
 
+export type Provider = "anthropic" | "openai";
+
 export type Credentials = {
+  primaryProvider?: Provider;
   anthropicApiKey?: string;
   openaiApiKey?: string;
 };
@@ -32,12 +35,16 @@ export function saveCredentials(credentials: Credentials): void {
 export function getApiKey(
   provider: "anthropic" | "openai",
 ): string | undefined {
-  if (provider === "anthropic") {
-    return process.env.ANTHROPIC_API_KEY ?? loadCredentials().anthropicApiKey;
-  }
-  return process.env.OPENAI_API_KEY ?? loadCredentials().openaiApiKey;
+  const creds = loadCredentials();
+  if (provider === "anthropic") return creds.anthropicApiKey;
+  return creds.openaiApiKey;
+}
+
+export function getPrimaryProvider(): Provider {
+  return loadCredentials().primaryProvider ?? "anthropic";
 }
 
 export function hasRequiredKeys(): boolean {
-  return getApiKey("anthropic") !== undefined;
+  const primary = getPrimaryProvider();
+  return getApiKey(primary) !== undefined;
 }
