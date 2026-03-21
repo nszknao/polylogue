@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
+import { getApiKey } from "@/lib/credentials.ts";
 import type { PersonaTool } from "@/types.ts";
 
 export type StreamEvent = { type: "text"; text: string };
@@ -21,7 +22,7 @@ class AnthropicLLMClient implements LLMClient {
   private client: Anthropic;
 
   constructor() {
-    this.client = new Anthropic();
+    this.client = new Anthropic({ apiKey: getApiKey("anthropic") });
   }
 
   async *stream(params: LLMParams): AsyncIterable<StreamEvent> {
@@ -60,7 +61,7 @@ class OpenAILLMClient implements LLMClient {
   private client: OpenAI;
 
   constructor() {
-    this.client = new OpenAI();
+    this.client = new OpenAI({ apiKey: getApiKey("openai") });
   }
 
   private buildTools(

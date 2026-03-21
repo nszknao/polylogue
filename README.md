@@ -15,13 +15,14 @@ npm install -g polylogue
 polylogue "Should we adopt microservices?"
 ```
 
-## Requirements
+## Setup
 
-Set at least one API key as an environment variable:
+On first run, polylogue will interactively prompt you to choose a primary provider (Anthropic or OpenAI) and enter your API keys. Credentials are saved to `~/.config/polylogue/credentials.json`.
+
+You can reconfigure at any time:
 
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...
-export OPENAI_API_KEY=sk-...       # optional, enables web search personas
+npx polylogue configure
 ```
 
 ## Features
