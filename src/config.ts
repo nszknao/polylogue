@@ -1,8 +1,8 @@
 import { getPrimaryProvider } from "@/lib/credentials.ts";
 
 const DEFAULT_MODELS = {
-  anthropic: "claude-sonnet-4-20250514",
-  openai: "gpt-4o",
+  anthropic: "claude-sonnet-4-6",
+  openai: "gpt-5.4-mini",
 } as const;
 
 export const config = {

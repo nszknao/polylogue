@@ -25,12 +25,29 @@ class AnthropicLLMClient implements LLMClient {
     this.client = new Anthropic({ apiKey: getApiKey("anthropic") });
   }
 
+  private buildTools(
+    tools?: PersonaTool[],
+  ): Array<{ type: "web_search_20250305"; name: "web_search" }> | undefined {
+    if (!tools?.length) return undefined;
+    const mapped: Array<{
+      type: "web_search_20250305";
+      name: "web_search";
+    }> = [];
+    for (const t of tools) {
+      if (t === "web_search") {
+        mapped.push({ type: "web_search_20250305", name: "web_search" });
+      }
+    }
+    return mapped.length > 0 ? mapped : undefined;
+  }
+
   async *stream(params: LLMParams): AsyncIterable<StreamEvent> {
     const stream = this.client.messages.stream({
       model: params.model,
       max_tokens: params.maxTokens,
       system: params.system,
       messages: [{ role: "user", content: params.userPrompt }],
+      tools: this.buildTools(params.tools),
     });
 
     for await (const event of stream) {
@@ -49,11 +66,15 @@ class AnthropicLLMClient implements LLMClient {
       max_tokens: params.maxTokens,
       system: params.system,
       messages: [{ role: "user", content: params.userPrompt }],
+      tools: this.buildTools(params.tools),
     });
 
-    const text = response.content[0];
-    if (!text || text.type !== "text") throw new Error("Unexpected response");
-    return text.text;
+    const texts: string[] = [];
+    for (const block of response.content) {
+      if (block.type === "text") texts.push(block.text);
+    }
+    if (texts.length === 0) throw new Error("Unexpected response");
+    return texts.join("");
   }
 }
 
@@ -110,7 +131,12 @@ class OpenAILLMClient implements LLMClient {
 const clients = new Map<string, LLMClient>();
 
 function getProviderKey(model: string): string {
-  if (model.startsWith("gpt-") || model.startsWith("o")) return "openai";
+  if (
+    model.startsWith("gpt-") ||
+    model.startsWith("o") ||
+    model.startsWith("chatgpt-")
+  )
+    return "openai";
   return "anthropic";
 }
 

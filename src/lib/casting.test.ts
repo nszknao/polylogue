@@ -72,9 +72,7 @@ describe("buildPersonas", () => {
 
   test("assigns default model when no model_category", () => {
     const personas = buildPersonas(raw);
-    expect(personas.every((p) => p.model === "claude-sonnet-4-20250514")).toBe(
-      true,
-    );
+    expect(personas.every((p) => p.model === "claude-sonnet-4-6")).toBe(true);
   });
 
   test("maps model_category to correct models", () => {
@@ -99,12 +97,12 @@ describe("buildPersonas", () => {
       },
     ];
     const personas = buildPersonas(rawWithCategories);
-    expect(personas[0]?.model).toBe("gpt-4o");
-    expect(personas[1]?.model).toBe("claude-sonnet-4-20250514");
-    expect(personas[2]?.model).toBe("claude-haiku-4-5-20251001");
+    expect(personas[0]?.model).toBe("claude-sonnet-4-6");
+    expect(personas[1]?.model).toBe("claude-opus-4-6");
+    expect(personas[2]?.model).toBe("claude-sonnet-4-6");
   });
 
-  test("assigns web_search tool to gpt models", () => {
+  test("assigns web_search tool to web_search category", () => {
     const rawWithSearch = [
       {
         name: "Researcher",
@@ -134,7 +132,7 @@ describe("buildPersonas", () => {
       },
     ];
     const personas = buildPersonas(rawWithUnknown);
-    expect(personas[0]?.model).toBe("claude-sonnet-4-20250514");
+    expect(personas[0]?.model).toBe("claude-sonnet-4-6");
   });
 
   test("preserves name, expertise, perspective", () => {

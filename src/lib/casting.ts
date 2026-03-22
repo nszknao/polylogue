@@ -11,14 +11,14 @@ type ModelCategory = "reasoning" | "creative" | "web_search";
 
 const MODEL_MAPS = {
   anthropic: {
-    reasoning: "claude-sonnet-4-20250514",
-    creative: "claude-haiku-4-5-20251001",
-    web_search: "gpt-4o",
+    reasoning: "claude-opus-4-6",
+    creative: "claude-sonnet-4-6",
+    web_search: "claude-sonnet-4-6",
   },
   openai: {
-    reasoning: "gpt-4o",
-    creative: "gpt-4o-mini",
-    web_search: "gpt-4o",
+    reasoning: "gpt-5.4",
+    creative: "gpt-5.4-mini",
+    web_search: "gpt-5.4",
   },
 } as const;
 
@@ -52,14 +52,14 @@ function resolveModel(category?: string): string {
   return config.defaultModel;
 }
 
-function isWebSearchModel(model: string): boolean {
-  return model.startsWith("gpt-") || model.startsWith("o");
+function hasWebSearchTool(category?: string): boolean {
+  return category === "web_search";
 }
 
 export function buildPersonas(raw: RawPersona[]): Persona[] {
   return raw.map((p, i) => {
     const model = resolveModel(p.model_category);
-    const tools: PersonaTool[] | undefined = isWebSearchModel(model)
+    const tools: PersonaTool[] | undefined = hasWebSearchTool(p.model_category)
       ? ["web_search"]
       : undefined;
     return {
