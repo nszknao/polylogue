@@ -11,6 +11,7 @@ Available protocols:
 - stepladder: Personas join the discussion one by one. Best for ensuring each voice is heard equally.
 - delphi: Anonymous multi-round convergence. Best for forecasting or reaching consensus on uncertain topics.
 
+Write the "reason" in the same language as the topic.
 Output only a JSON object (no other text):
 {"protocol": "<protocol-name>", "reason": "<one sentence reason>"}`;
 }

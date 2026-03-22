@@ -10,6 +10,15 @@ type Props = {
   onConfirm: (protocol: ProtocolType) => void;
 };
 
+const PROTOCOL_ORDER: ProtocolType[] = [
+  "round-robin",
+  "devils-advocate",
+  "dialectical",
+  "ngt",
+  "stepladder",
+  "delphi",
+];
+
 export const PROTOCOL_LABELS: Record<ProtocolType, string> = {
   "round-robin": "Round Robin",
   "devils-advocate": "Devil's Advocate",
@@ -19,14 +28,28 @@ export const PROTOCOL_LABELS: Record<ProtocolType, string> = {
   delphi: "Delphi Method",
 };
 
+const PROTOCOL_HINTS: Record<ProtocolType, string> = {
+  "round-robin": "General brainstorming, broad exploration",
+  "devils-advocate": "Stress-test a proposal with systematic criticism",
+  dialectical: "Opposing teams debate to reach synthesis",
+  ngt: "Diverge ideas independently, then share and vote",
+  stepladder: "Add voices one-by-one for equal participation",
+  delphi: "Anonymous multi-round consensus on uncertain topics",
+};
+
 export function ProtocolDisplay({ topic, onConfirm }: Props) {
   const [selection, setSelection] = useState<ProtocolSelection | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     selectProtocol(topic)
-      .then(setSelection)
+      .then((sel) => {
+        setSelection(sel);
+        const index = PROTOCOL_ORDER.indexOf(sel.protocol);
+        if (index >= 0) setSelectedIndex(index);
+      })
       .catch((err: unknown) => {
         setError(
           err instanceof Error ? err.message : "Protocol selection failed",
@@ -34,13 +57,16 @@ export function ProtocolDisplay({ topic, onConfirm }: Props) {
       });
   }, [topic]);
 
-  useInput((input) => {
+  useInput((_input, key) => {
     if (error) {
-      // Retry on Enter
-      if (input === "\r" || input === " ") {
+      if (key.return) {
         setError(null);
         selectProtocol(topic)
-          .then(setSelection)
+          .then((sel) => {
+            setSelection(sel);
+            const index = PROTOCOL_ORDER.indexOf(sel.protocol);
+            if (index >= 0) setSelectedIndex(index);
+          })
           .catch((err: unknown) => {
             setError(
               err instanceof Error ? err.message : "Protocol selection failed",
@@ -50,9 +76,20 @@ export function ProtocolDisplay({ topic, onConfirm }: Props) {
       return;
     }
     if (!selection || confirmed) return;
-    if (input === "\r" || input === " ") {
+    if (key.upArrow) {
+      setSelectedIndex((prev) =>
+        prev > 0 ? prev - 1 : PROTOCOL_ORDER.length - 1,
+      );
+    }
+    if (key.downArrow) {
+      setSelectedIndex((prev) =>
+        prev < PROTOCOL_ORDER.length - 1 ? prev + 1 : 0,
+      );
+    }
+    if (key.return) {
       setConfirmed(true);
-      onConfirm(selection.protocol);
+      const protocol = PROTOCOL_ORDER[selectedIndex];
+      if (protocol) onConfirm(protocol);
     }
   });
 
@@ -75,20 +112,27 @@ export function ProtocolDisplay({ topic, onConfirm }: Props) {
 
   return (
     <Box flexDirection="column">
-      <Box>
-        <Text bold color="green">
-          Protocol:{" "}
+      <Box flexDirection="column" marginBottom={1}>
+        <Text>
+          <Text dimColor>Recommended: </Text>
+          <Text bold>{PROTOCOL_LABELS[selection.protocol]}</Text>
         </Text>
-        <Text bold>{PROTOCOL_LABELS[selection.protocol]}</Text>
+        <Text dimColor> {selection.reason}</Text>
       </Box>
-      <Box marginLeft={2}>
-        <Text dimColor>{selection.reason}</Text>
-      </Box>
-      {!confirmed && (
-        <Box marginTop={1}>
-          <Text dimColor>[Enter to continue]</Text>
-        </Box>
-      )}
+      <Text>Select protocol (↑↓ to change, Enter to confirm):</Text>
+      {PROTOCOL_ORDER.map((p, i) => (
+        <Text key={p}>
+          <Text color={i === selectedIndex ? "green" : "gray"}>
+            {i === selectedIndex ? "❯ " : "  "}
+          </Text>
+          {PROTOCOL_LABELS[p]}
+          <Text dimColor>
+            {" — "}
+            {PROTOCOL_HINTS[p]}
+            {p === selection.protocol ? " (recommended)" : ""}
+          </Text>
+        </Text>
+      ))}
     </Box>
   );
 }
