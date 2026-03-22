@@ -1,5 +1,13 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, mock, test } from "bun:test";
 import { buildPersonas, parsePersonasJson } from "@/lib/casting.ts";
+
+mock.module("@/lib/credentials.ts", () => ({
+  getPrimaryProvider: () => "anthropic" as const,
+  getApiKey: () => undefined,
+  loadCredentials: () => ({}),
+  saveCredentials: () => {},
+  hasRequiredKeys: () => false,
+}));
 
 describe("parsePersonasJson", () => {
   test("parses clean JSON array", () => {

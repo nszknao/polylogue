@@ -41,21 +41,30 @@ export function ApiKeySetup({ onComplete }: Props) {
     }
   });
 
+  const existing = loadCredentials();
+
+  const hasExistingPrimaryKey = (provider: Provider): boolean => {
+    const key =
+      provider === "anthropic"
+        ? existing.anthropicApiKey
+        : existing.openaiApiKey;
+    return key !== undefined && key !== "";
+  };
+
   const handlePrimarySubmit = (value: string) => {
     const trimmed = value.trim();
-    if (!trimmed) return;
-    setPrimaryKey(trimmed);
+    if (!trimmed && !hasExistingPrimaryKey(primary)) return;
+    if (trimmed) setPrimaryKey(trimmed);
     setStep("secondary-key");
   };
 
   const handleSecondarySubmit = (value: string) => {
     const trimmed = value.trim();
-    const existing = loadCredentials();
     const secondary = OTHER_PROVIDER[primary];
     saveCredentials({
       ...existing,
       primaryProvider: primary,
-      [`${primary}ApiKey`]: primaryKey,
+      ...(primaryKey ? { [`${primary}ApiKey`]: primaryKey } : {}),
       ...(trimmed ? { [`${secondary}ApiKey`]: trimmed } : {}),
     });
     setStep("done");
@@ -79,13 +88,22 @@ export function ApiKeySetup({ onComplete }: Props) {
                   {selected === i ? "❯ " : "  "}
                 </Text>
                 {PROVIDER_LABELS[p]}
+                {hasExistingPrimaryKey(p) ? (
+                  <Text color="gray"> (configured)</Text>
+                ) : null}
               </Text>
             ))}
           </Box>
         )}
         {step === "primary-key" && (
           <Box flexDirection="column">
-            <Text>{PROVIDER_LABELS[primary]} API Key (required):</Text>
+            <Text>
+              {PROVIDER_LABELS[primary]} API Key (required
+              {hasExistingPrimaryKey(primary)
+                ? " — already set, press Enter to keep"
+                : ""}
+              ):
+            </Text>
             <Box>
               <Text color="green">❯ </Text>
               <PasswordInput onSubmit={handlePrimarySubmit} />
@@ -95,8 +113,11 @@ export function ApiKeySetup({ onComplete }: Props) {
         {step === "secondary-key" && (
           <Box flexDirection="column">
             <Text>
-              {PROVIDER_LABELS[secondary]} API Key (optional — press Enter to
-              skip):
+              {PROVIDER_LABELS[secondary]} API Key (optional
+              {hasExistingPrimaryKey(secondary)
+                ? " — already set, press Enter to keep"
+                : " — press Enter to skip"}
+              ):
             </Text>
             <Box>
               <Text color="green">❯ </Text>
